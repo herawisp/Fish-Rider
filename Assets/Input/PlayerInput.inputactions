@@ -1,0 +1,36 @@
+{
+    "version": 1,
+    "name": "PlayerInput",
+    "maps": [
+        {
+            "name": "Movement",
+            "id": "e038bec4-4b2c-459b-a0d9-46857a18c596",
+            "actions": [
+                {
+                    "name": "Fly",
+                    "type": "PassThrough",
+                    "id": "12c9f0e5-37b6-4e09-9db5-71c3f9b4c2e9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
+                    "priority": 0
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "6ff471ca-d65f-43bc-8f2a-5bc80ce24f87",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fly",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
