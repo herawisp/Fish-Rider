@@ -3,6 +3,19 @@ using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour {
 
+    public static Movement Instance { get; private set; }
+
+    private void Awake() {
+        if (Instance != null && Instance != this) {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); 
+        _rigidbody = GetComponent<Rigidbody2D>();
+    }
+
     public float MaxSpeed;
     public float Force;
     public float Gravity;
@@ -12,10 +25,6 @@ public class Movement : MonoBehaviour {
     bool _isHoldingInput = false;
 
     Rigidbody2D _rigidbody;
-
-    void Awake() {
-        _rigidbody = GetComponent<Rigidbody2D>();
-    }
 
     void Update() {
         if (_isHoldingInput) {

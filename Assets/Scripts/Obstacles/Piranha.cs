@@ -2,8 +2,11 @@ using UnityEngine;
 
 public class Piranha : MonoBehaviour {
 
-    Vector3 _middleWorldPosition;
-    Vector3 _rightWorldPosition;
+    public float minimumWidth;
+    public float maximumWidth;
+    public float minimumHeight;
+    public float maximumHeight;
+    
     Vector3 _bottomWorldPosition;
 
     Rigidbody2D _rigidbody;
@@ -12,20 +15,10 @@ public class Piranha : MonoBehaviour {
         _rigidbody = GetComponent<Rigidbody2D>();
     }
 
-    void Start() {
+    public void Generate() {
         Vector3 spawnPosition = PickRandomSpawnPosition();
         transform.position = spawnPosition;
-        Launch(5, 5);
-    }
-
-    (Vector3, Vector3) GetScreenWidthWorldPosition() {
-        Vector3 cameraPosition = Camera.main.transform.position;
-        Vector3 middleScreenPosition = new(Screen.width / 2, cameraPosition.y, cameraPosition.z);
-        Vector3 rightScreenPosition = new(Screen.width, cameraPosition.y, cameraPosition.z);
-            
-        Vector3 middleWorldPosition = Camera.main.ScreenToWorldPoint(middleScreenPosition);
-        Vector3 rightWorldPosition = Camera.main.ScreenToWorldPoint(rightScreenPosition);
-        return (middleWorldPosition, rightWorldPosition);
+        Launch();
     }
 
     Vector3 GetScreenBottomWorldPosition() {
@@ -36,17 +29,23 @@ public class Piranha : MonoBehaviour {
     }
 
     Vector3 PickRandomSpawnPosition() {
-        (_middleWorldPosition, _rightWorldPosition) = GetScreenWidthWorldPosition();
-        float randomXPosition = Random.Range(_middleWorldPosition.x, _rightWorldPosition.x);
+        float randomWidth = Random.Range(minimumWidth, maximumWidth);
+        float randomXPosition = Movement.Instance.transform.position.x + randomWidth;
         _bottomWorldPosition = GetScreenBottomWorldPosition();
         return new(randomXPosition, _bottomWorldPosition.y, 0);
     }
 
-    void Launch(float height, float width) {
-        float g = - Physics.gravity.y;
+    public void Launch() {
+        float height = Random.Range(minimumHeight, maximumHeight);
+        float width = Random.Range(minimumWidth, maximumWidth);
+
+        float speedMultiplier = 2f;
+
+        float g = - Physics2D.gravity.y;
         float vy = Mathf.Sqrt(2 * g * height);
         float vx = width * Mathf.Sqrt(g / (8 * height));
-        _rigidbody.linearVelocity = new(-vx, vy);
+        _rigidbody.gravityScale = speedMultiplier * speedMultiplier;
+        _rigidbody.linearVelocity = new Vector2(-vx, vy) * speedMultiplier;
     }
 
     void OnTriggerEnter2D(Collider2D collision) {

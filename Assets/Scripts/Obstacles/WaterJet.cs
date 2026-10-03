@@ -6,6 +6,7 @@ public class WaterJet : MonoBehaviour {
     public float MaximumLength;
 
     public Transform WaterJetAnchorPrefab;
+    public Transform WaterJetLinePrefab;
 
     Vector3 _topWorldPosition;
     Vector3 _bottomWorldPosition;
@@ -14,19 +15,34 @@ public class WaterJet : MonoBehaviour {
     Vector3 _direction;
     Transform _anchor1;
     Transform _anchor2;
+    Transform _waterJetLine;
+    Rigidbody2D _rigidBody2D;
 
-    public void Generate(Transform parent) {
+    void Awake() {
+        _rigidBody2D = GetComponent<Rigidbody2D>();
+    }
+
+    public void Generate() {
         _spawnPosition = PickRandomSpawnPosition();
         _direction = GetRandomDirection();
         _endPosition = _spawnPosition + _direction;
         
-        _anchor1 = Instantiate(WaterJetAnchorPrefab, _spawnPosition, Quaternion.identity);
-        _anchor2 = Instantiate(WaterJetAnchorPrefab, _endPosition, Quaternion.identity);
-        _anchor1.SetParent(parent);
-        _anchor2.SetParent(parent);
-
+        GenerateAnchors();
         ConnectAnchor();
-        transform.SetParent(parent);
+
+        _rigidBody2D.linearVelocityX = - ContentSpawner.Instance.Speed;
+    }
+
+    void GenerateAnchors() {
+        if (_anchor1 == null) {
+            _anchor1 = Instantiate(WaterJetAnchorPrefab, _spawnPosition, Quaternion.identity);
+            _anchor1.SetParent(transform);
+        } else _anchor1.position = _spawnPosition;
+
+        if (_anchor2 == null) {
+            _anchor2 = Instantiate(WaterJetAnchorPrefab, _endPosition, Quaternion.identity);
+            _anchor2.SetParent(transform);
+        } else _anchor2.position = _endPosition;
     }
 
     (Vector3, Vector3) GetScreenHeightWorldPosition() {
@@ -42,7 +58,7 @@ public class WaterJet : MonoBehaviour {
     Vector3 PickRandomSpawnPosition() {
         (_topWorldPosition, _bottomWorldPosition) = GetScreenHeightWorldPosition();
         float randomYPosition = Random.Range(_bottomWorldPosition.y, _topWorldPosition.y);
-        return new(0, randomYPosition, 0);
+        return new(transform.position.x, randomYPosition, transform.position.z);
     }
 
     bool IsOutOfBounds(Vector3 position) {
@@ -64,19 +80,13 @@ public class WaterJet : MonoBehaviour {
         float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
         Quaternion quaternion = Quaternion.Euler(0, 0, angle);
 
-        transform.position = midPoint;
-        transform.rotation = quaternion;
-        transform.localScale = new(_direction.magnitude, 1, 1);
-    }
-
-    void OnTriggerEnter2D(Collider2D collision) {
-        if (collision.gameObject.tag != "Player") return;
-        Debug.Log("Player touched the water jet");
-        // TODO: End run
-    }
-
-    void OnDestroy() {
-        Destroy(_anchor1);
-        Destroy(_anchor2);    
+        if (_waterJetLine == null) {
+            _waterJetLine = Instantiate(WaterJetLinePrefab, midPoint, quaternion);
+            _waterJetLine.SetParent(transform);
+        } else {
+            _waterJetLine.position = midPoint;
+            _waterJetLine.rotation = quaternion;
+        }
+        _waterJetLine.localScale = new(_direction.magnitude, 1, 1);
     }
 }
