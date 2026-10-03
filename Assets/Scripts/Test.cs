@@ -3,11 +3,11 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
 
-    public WaterJets waterJetPrefab;
+    public WaterJet waterJetPrefab;
 
     void Start()
     {
-        WaterJets waterJet = Instantiate(waterJetPrefab, transform);
+        WaterJet waterJet = Instantiate(waterJetPrefab, transform);
         waterJet.Generate(transform);
     }
 

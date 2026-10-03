@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WaterJets : MonoBehaviour {
+public class WaterJet : MonoBehaviour {
 
     public float MinimumLength;
     public float MaximumLength;
