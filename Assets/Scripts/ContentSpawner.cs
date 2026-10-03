@@ -1,7 +1,10 @@
-using Unity.VisualScripting.Antlr3.Runtime;
+using System;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum Obstacle {WaterJet, Piranha, LaserBeam}
+public enum FishCoinClusterPattern {Wave, Fish, Coin, Arrow}
 
 public class ContentSpawner : MonoBehaviour {
 
@@ -15,15 +18,20 @@ public class ContentSpawner : MonoBehaviour {
     public float MinimumCooldown;
     public float MaximumSpeed;
     
+    [Header("Content Chances")]
+    public int FishCoinClusterChance;
+    public int ObstacleChance;
+
     [Header("Obstacle Chances")]
     public int WaterJetChance;
     public int PiranhaChance;
     public int LaserBeamChance;
 
-    [Header("Obstacle Pools")]
+    [Header("Object Pools")]
     public ObjectPool WaterJetPool;
     public ObjectPool PiranhaPool;
     public ObjectPool LaserBeamPool;
+    public ObjectPool FishCoinClusterPool;
 
     private float _contentLifetime = 10f;
     private float _time;
@@ -46,7 +54,7 @@ public class ContentSpawner : MonoBehaviour {
     void Update() {
         _time += Time.deltaTime;
         if (_time < Cooldown) return;
-        SpawnObstacle();
+        SpawnContent();
         Speed = Mathf.Min(Speed + SpeedIncrementRate, MaximumSpeed);
         Cooldown = Mathf.Max(Cooldown - CooldownReductionRate, MinimumCooldown);
         _time = 0;
@@ -54,6 +62,16 @@ public class ContentSpawner : MonoBehaviour {
 
     //==============================================================================================//
     //==============================================================================================//
+
+    void SpawnContent() {
+        int totalWeight = FishCoinClusterChance + ObstacleChance;
+        int randomInt = UnityEngine.Random.Range(0, totalWeight);
+
+        if (randomInt < FishCoinClusterChance) {
+            SpawnFishCoinCluster();
+            return;
+        } else SpawnObstacle();
+    }
 
     void SpawnObstacle() {
         Obstacle obstacle = PickRandomObstacle();
@@ -90,7 +108,7 @@ public class ContentSpawner : MonoBehaviour {
 
     Obstacle PickRandomObstacle() {
         int totalWeight = WaterJetChance + PiranhaChance + LaserBeamChance;
-        int randomInt = Random.Range(0, totalWeight);
+        int randomInt = UnityEngine.Random.Range(0, totalWeight);
 
         if (randomInt < WaterJetChance) return Obstacle.WaterJet;
         randomInt -= WaterJetChance;
@@ -99,8 +117,20 @@ public class ContentSpawner : MonoBehaviour {
         randomInt -= PiranhaChance;
 
         if (randomInt < LaserBeamChance) return Obstacle.LaserBeam;
-        randomInt -= LaserBeamChance;
         return Obstacle.WaterJet;
+    }
+
+    //==============================================================================================//
+    //==============================================================================================//
+    
+    void SpawnFishCoinCluster() {
+        GameObject fishCoinClusterObj = FishCoinClusterPool.GetObject();
+        Transform transform = fishCoinClusterObj.transform;
+        transform.position = new(15, transform.position.y, transform.position.z);
+
+        FishCoinCluster fishCoinCluster = fishCoinClusterObj.GetComponent<FishCoinCluster>();
+        fishCoinCluster.Generate();
+        StartCoroutine(FishCoinClusterPool.ReturnLater(fishCoinClusterObj, _contentLifetime));
     }
 
     //==============================================================================================//

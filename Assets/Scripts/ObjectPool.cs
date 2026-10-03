@@ -4,8 +4,16 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour {
 
-    public GameObject prefab;
+    public List<GameObject> prefabs;
     private Queue<GameObject> pool = new();
+
+    void Start() {
+        if (prefabs.Count == 1) return;
+        foreach (GameObject prefab in prefabs) {
+            GameObject gameObject = Instantiate(prefab);
+            ReturnObject(gameObject);
+        }
+    }
 
     public GameObject GetObject() {
         if (pool.Count > 0) {
@@ -14,7 +22,7 @@ public class ObjectPool : MonoBehaviour {
             return obj;
         }
 
-        return Instantiate(prefab);
+        return Instantiate(PickRandomPrefab());
     }
 
     public void ReturnObject(GameObject obj) {
@@ -26,4 +34,10 @@ public class ObjectPool : MonoBehaviour {
         yield return new WaitForSeconds(time);
         ReturnObject(obj);
     }
+
+    GameObject PickRandomPrefab() {
+        if (prefabs.Count == 1) return prefabs[0];
+        return prefabs[Random.Range(0, prefabs.Count - 1)];
+    }
+
 }
